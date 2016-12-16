@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Add Book and Review</title>
+	{% load static %}
+	<link rel="stylesheet" href="{% static 'beltreviewer/css/styles.css'%}">
+</head>
+<body>
+<header>
+	<li><a href="/books">Home</a></li>
+	<li><a href="/logout">Logout</a></li>
+</header>
+<h1>Add a New Book Title and a Review</h1>
+<div class="error-messsages">
+</div>
+{% if messages %}
+	{% for message in messages %}
+	<div><p style="color: red;">{{ message }}</p></div>
+  	{% endfor %}
+{% endif %}
+<form action="addreview" method="post" id="newbook">
+{% csrf_token %}
+	Book Title: <input type="text" name="title">
+	Author:
+	<select name="authorlist">
+		<option>Select an Author</option>
+		{% for book in books %}
+		<option value="{{book.author}}">{{book.author}}</option>
+		{% endfor %}
+	</select>	
+	Or add a new author:
+	<input type="text" name="author">
+	Review: <textarea rows="3" cols="40" name="content"></textarea>
+	Rating:
+	<select name="rating">
+		<option value="">Select a Rating</option>
+		<option value="1">1</option>
+		<option value="2">2</option>
+		<option value="3">3</option>
+		<option value="4">4</option>
+		<option value="5">5</option>
+	</select>
+	<input type="submit" value="Add Book and Review">
+</form>
+</body>
+</html>

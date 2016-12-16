@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Add Book and Review</title>
+	{% load static %}
+	<link rel="stylesheet" href="{% static 'beltreviewer/css/styles.css'%}">
+	<script src="https://use.fontawesome.com/afa3410fb1.js"></script>
+</head>
+<body>
+<header>
+	<div class="navbar">
+		<li><a href="/books">Home</a></li>
+		<li><a href="/logout">Logout</a></li>
+	</div>
+</header>
+
+<!-- AREA WITH BOOK REVIEWS OF THIS BOOK -->
+<h2>{{book.title}}</h2>
+<p><span>Author:</span> {{book.author}}</p>
+
+<div id="this-book-reviews" class="block">
+<h2>Reviews:</h2>
+	<div class="book">
+		{% for review in reviews %}
+		<div class="review">
+		<p>Rating:		{% if review.rating == 5 %}
+		<i style="color: #FFA824;" class="fa fa-star fa-2x"></i><i style="color: #FFA824;" class="fa fa-star fa-2x"></i><i style="color: #FFA824;" class="fa fa-star fa-2x"></i><i style="color: #FFA824;" class="fa fa-star fa-2x"></i><i style="color: #FFA824;" class="fa fa-star fa-2x"></i>
+		{% endif %}
+		{% if review.rating == 4 %}
+		<i style="color: #FFA824;" class="fa fa-star fa-2x"></i><i style="color: #FFA824;" class="fa fa-star fa-2x"></i><i style="color: #FFA824;" class="fa fa-star fa-2x"></i><i style="color: #FFA824;" class="fa fa-star fa-2x"></i><i style="color: #F5DEB3;" class="fa fa-star fa-2x"></i>
+		{% endif %}
+		{% if review.rating == 3 %}
+		<i style="color: #FFA824;" class="fa fa-star fa-2x"></i><i style="color: #FFA824;" class="fa fa-star fa-2x"></i><i style="color: #FFA824;" class="fa fa-star fa-2x"></i><i style="color: #F5DEB3;" class="fa fa-star fa-2x"></i><i style="color: #F5DEB3;" class="fa fa-star fa-2x"></i>
+		{% endif %}
+		{% if review.rating == 2 %}
+		<i style="color: #FFA824;" class="fa fa-star fa-2x"></i><i style="color: #FFA824;" class="fa fa-star fa-2x"></i><i style="color: #F5DEB3;" class="fa fa-star fa-2x"></i><i style="color: #F5DEB3;" class="fa fa-star fa-2x"></i><i style="color: #F5DEB3;" class="fa fa-star fa-2x"></i>
+		{% endif %}
+		{% if review.rating == 1 %}
+		<i style="color: #FFA824;" class="fa fa-star fa-2x"></i><i style="color: #F5DEB3;" class="fa fa-star fa-2x"></i><i style="color: #F5DEB3;" class="fa fa-star fa-2x"></i><i style="color: #F5DEB3;" class="fa fa-star fa-2x"></i><i style="color: #F5DEB3;" class="fa fa-star fa-2x"></i>
+		{% endif %}</p>
+			<a href="/user/{{review.user.id}}"><p>{{review.user.first_name}}</a> says: {{review.content}}</p>
+			<p>Published on {{review.created_at}}
+			<hr>
+		</div>
+		{% endfor %}
+	</div>
+</div>
+<div class="block">
+	<form method="post" action="addreview">
+	{% csrf_token %}
+		<input type="hidden" name="bookid" value="{{book.id}}">
+		<p><span>Add a Review:</span></p>
+		<textarea rows="3" cols="40" name="content"></textarea>
+	<p><span>Rating:</span>
+		<select name="rating">
+			<option value="">Select a Rating</option>
+			<option value="1">1</option>
+			<option value="2">2</option>
+			<option value="3">3</option>
+			<option value="4">4</option>
+			<option value="5">5</option>
+		</select>
+	</p>
+	<input type="submit" value="Submit Review">
+	</form>
+</div>
+</body>
+</html>
