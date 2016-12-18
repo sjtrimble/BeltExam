@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Pokes</title>
+	{% load static %}
+	<link rel="stylesheet" href="{% static 'poke/css/styles.css'%}">
+</head>
+<body>
+<header>
+	<div class="navbar">
+		<li><a href="/logout">Logout</a></li>
+	</div>
+	<div>
+		<h1 id="welcometitle">Welcome, {{thisuser.name}}!</h1>
+		<h2>{{userpokedcount}} people poked you!</h2>
+	</div>
+	<div>
+	{% for poke in userpoked %}
+	<p>{{poke.user.name}} poked you {{userpoked.count}} times.</p>
+	{% endfor %}
+	</div>
+
+{% if messages %}
+	{% for message in messages %}
+	<div><p style="color: red;">{{ message }}</p></div>
+  	{% endfor %}
+{% endif %}
+</header>
+<div>
+<h2>People you may want to poke:</h2>
+	<table>
+	<tr>
+		<td><span>Name</span></td>
+		<td><span>Alias</span></td>
+		<td><span>Email Address</span></td>
+		<td><span>Poke History</span></td>
+		<td><span>Action</span></td>
+	</tr>
+	{% for user in users %}
+	<tr>
+	<form action="pokeuser" method="post">
+	{% csrf_token %}
+		<td>{{user.name}}</td>
+		<td>{{user.alias}}</td>
+		<td>{{user.email}}</td>
+		<td>{{user.count}}</td>
+		<input type="hidden" name="thepoked" value="{{user.id}}">
+		<td><a href="/pokeuser"><input type="submit" value=poke></a></td>
+	</form>
+	</tr>
+	{% endfor %}
+	</table>
+</div>
+<div>
+<hr>
+	{% for poke in allpokes %}
+	<p>POKER: {{poke.user.name}} POKED: {{poke.poked.name}}</p>
+	{% endfor %}
+</div>
+</body>
+</html>

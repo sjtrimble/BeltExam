@@ -8,57 +8,9 @@ import bcrypt
 # Setting REGEX format for email to reference in logic below
 EMAIL_REGEX = re.compile(r'^[a-zA-Z0-9.+_-]+@[a-zA-Z0-9._-]+\.[a-zA-Z]+$')
 
-class QuoteManager(models.Manager):
-	def quotevalid(self, formdata, user_id):
-		content = formdata['content']
-		author = formdata['author']
-		error = False
-		validquote = (False, "")
-		errormessage = []
-		# <--------------- INPUT FIELDS VALIDATIONS ---------------> 
-		# Check that fields have content
-		if len(author) < 1:
-			error = True
-			errormessage.append("Please enter who the quote is quoted by.")
-		if len(content) < 1:
-			error = True
-			errormessage.append("Please enter a review.")
-
-		# Stopping point if fields are missing
-		if error:
-			validquote = (False, errormessage)
-			return validquote
-	
-		else:
-			if len(author) < 3:
-				error = True
-				errormessage.append("Please enter an author of more than 3 characters.")
-			if len(content) < 10:
-				error = True
-				errormessage.append("Please enter a quote message that is longer than 10 characters.")
-
-		if error:
-			validquote = (False, errormessage)
-			return validquote
-
-		else:
-			# <--------------- CREATE THE QUOTE ---------------> 
-			Quote.objects.create(content=content,user_id=user_id, author=author)
-			validquote = (True, "")
-			print validquote
-			return validquote		
-
-class FavoriteManager(models.Manager):
-	def addtofavorites(self, formdata, user_id, quote_id):
-		thisquote = Quote.objects.filter(id=quote_id)[0]
-		print thisquote
-		favoritequote = Favorite.objects.create(user_id=user_id, quote=thisquote)
-		print "yes", favoritequote
-		return True
-
-	def removefavorite(self, formdata, quoteid):
-		thisfavoritequote = Favorite.objects.filter(id=quoteid)[0]
-		thisfavoritequote.delete()
+class PokerManager(models.Manager):
+	def pokeauser(self, formdata, user_id):
+		Pokes.objects.create(user_id=user_id, poked_id=formdata['thepoked'])
 		return True	
 
 class UserManager(models.Manager):
@@ -116,25 +68,24 @@ class UserManager(models.Manager):
 		errormessage = []
 		validregistration = (False, "")
 		error = False
-
 		if len(formdata['email']) < 1:
 			error = True
 			errormessage.append("Please complete email field.")
 		if len(formdata['password']) < 1:
 			error = True
 			errormessage.append("Please complete password field.")
-		if len(formdata['first_name']) < 1:
+		if len(formdata['name']) < 1:
 			error = True
-			errormessage.append("Please complete first name field.")
-		if len(formdata['last_name']) < 1:
+			errormessage.append("Please complete name field.")
+		if len(formdata['alias']) < 1:
 			error = True
-			errormessage.append("Please complete last name field.")
+			errormessage.append("Please complete alias field.")
 		if len(formdata['confirm_password']) < 1:
 			error = True
 			errormessage.append("Please confirm password.")
-		if formdata['birthday'] == "YY-MM-DD" :
+		if len(str(formdata['birthday'])) < 1:
 			error = True
-			errormessage.append("Please enter your date of birth.")
+			errormessage.append("Please enter your birthday.")
 
 		if error:
 			return validregistration
@@ -156,12 +107,12 @@ class UserManager(models.Manager):
 				errormessage.append("That email has already been registered. Please use a different email address.")
 			print validregistration, error, "emailinsystem"
 			# Check that first name is of proper length:
-			if len(formdata['first_name']) < 2:
+			if len(formdata['name']) < 2:
 				error = True
 				errormessage.append("Please enter a first name of at least 2 characters long.")
 			print validregistration, error, "firstname"
 			# Check that last name is of proper length:
-			if len(formdata['last_name']) < 2: 
+			if len(formdata['alias']) < 2: 
 				error = True
 				errormessage.append("Please enter a last name of at least 2 characters long.")
 			print validregistration, error, "lastname"
@@ -169,6 +120,10 @@ class UserManager(models.Manager):
 				error = True
 				errormessage.append("Passwords do not match.")
 			print validregistration, error, "pw confirm"
+			if str(formdata['birthday'])[0:4] > str(datetime.today().year):
+				error = True
+				errormessage.append("Please enter a valid birthday.")
+			print validregistration, error, "birthday valid"
 
 			# Check for format
 			if error:
@@ -180,7 +135,7 @@ class UserManager(models.Manager):
 			# Creates a new User object:
 			# Setting a variable to easily call it below in the bcrypt method:
 				password = formdata['password'].encode()
-				thisuser = User.objects.create(first_name=formdata['first_name'], last_name=formdata['last_name'], email=formdata['email'], encrypted_password=bcrypt.hashpw(password, bcrypt.gensalt()), birthday=formdata['birthday'])
+				thisuser = User.objects.create(name=formdata['name'], alias=formdata['alias'], email=formdata['email'], encrypted_password=bcrypt.hashpw(password, bcrypt.gensalt()), birthday=formdata['birthday'])
 				print "object successfully created"
 				validregistration = (True, thisuser)
 				print validregistration
@@ -190,8 +145,8 @@ class UserManager(models.Manager):
 
 # User DB Table
 class User(models.Model):
-	first_name = models.CharField(max_length=50)
-	last_name = models.CharField(max_length=50)
+	name = models.CharField(max_length=50)
+	alias = models.CharField(max_length=50)
 	email = models.CharField(max_length=50)
 	encrypted_password = models.CharField(max_length=250)
 	birthday = models.DateField()
@@ -199,17 +154,9 @@ class User(models.Model):
 	updated_at = models.DateTimeField(auto_now=True)
 	objects = UserManager()
 
-class Quote(models.Model):
-	content = models.CharField(max_length=200)
-	user = models.ForeignKey('User', related_name="quoteuser")
-	author = models.CharField(max_length=50)
-	created_at = models.DateTimeField(auto_now_add=True)
-	updated_at = models.DateTimeField(auto_now=True)
-	objects = QuoteManager()
-
-class Favorite(models.Model):
-    user = models.ForeignKey('User', related_name ="favoritesuser")
-    quote = models.ForeignKey('Quote', related_name ="favoritequote")
-    created_at = models.DateTimeField(blank=True, null=True)
-    updated_at = models.DateTimeField(blank=True, null=True)
-    objects = FavoriteManager()
+class Pokes(models.Model):
+    user = models.ForeignKey('User', related_name="poker")
+    poked = models.ForeignKey('User', related_name ="poked")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    objects = PokerManager()
